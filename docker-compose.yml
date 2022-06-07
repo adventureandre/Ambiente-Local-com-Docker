@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  db:
+    image: mariadb:10.4
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=laravel
+    ports:
+      - 8011:3306
+    volumes:
+      - ./db_data:/etc/mysql/conf.d
+
+  app:
+    image: adventureandre/webserver:1.0
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - 8000:80
+    links:
+      - db
+    depends_on:
+      - db
+    tty: true
