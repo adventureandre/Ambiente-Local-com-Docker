@@ -1,25 +1,51 @@
-version: "3"
+version: "3.7"
 
 services:
+  #APP
+  app:
+    container_name: ADVFW-APP
+    image: adventureandre/start:1.0
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - adv-network
+    links:
+      - db
+    depends_on:
+        - db
+
+  #db mysql
   db:
-    image: mariadb:10.4
+    container_name: ADVFW-DB
+    image: mysql:8.0.15
+    restart: unless-stopped
     environment:
       - MYSQL_USER=root
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-      - MYSQL_DATABASE=laravel
+      - MYSQL_DATABASE=fullstackphp
     ports:
       - 8011:3306
     volumes:
       - ./db_data:/etc/mysql/conf.d
+    networks:
+      - adv-network
 
-  app:
-    image: adventureandre/webserver:1.0
-    volumes:
-      - ./:/var/www/html
+  #ngnix
+  web:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
     ports:
-      - 8000:80
-    links:
-      - db
-    depends_on:
-      - db
-    tty: true
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/:/etc/nginx/conf.d/
+    networks:
+        - adv-network
+
+
+networks:
+  adv-network:
+    driver: bridge
